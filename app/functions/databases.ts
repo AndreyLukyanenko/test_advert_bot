@@ -7,7 +7,7 @@
  * @license: MIT License
  *
  */
-import type { TelegramUserInterface, SurveyInterface } from "@app/types/databases.type";
+import type { SurveyInterface } from "@app/types/databases.type";
 import configs from "@configs/config";
 // import lowdb from "lowdb";
 // import lowdbFileSync from "lowdb/adapters/FileSync";
@@ -41,9 +41,13 @@ const databases = {
 // 	await databases.surveys.write(json);
 // };
 
-const writeSurvey = async (json: SurveyInterface): Promise<void> => {
-	// Implement logic to update or append user data in Google Sheets
-	await databases.surveys.write(json);
+const writeSurvey = async (data: SurveyInterface): Promise<void> => {
+	try {
+		await databases.surveys.write(data);
+	} catch (error) {
+		console.error("Error writing to Airtable:", error);
+		throw error;
+	}
 };
 
 export { databases, writeSurvey };
