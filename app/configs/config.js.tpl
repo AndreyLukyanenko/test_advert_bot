@@ -17,7 +17,14 @@ module.exports = {
 		selfSigned: true
 	},
 
-	"databases": { users: "databases/users.json" },
+	// "databases": { users: "databases/users.json" },
+	databases: {
+		surveys: {
+			apiKey: "key",
+			baseId: "baseId",
+			tableId: "tableId",
+		},
+	},
 
 	// Debug
 	"debug": true,

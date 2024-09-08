@@ -46,9 +46,7 @@ const sendPhoto = async (): Promise<void> => {
  */
 const start = async (): Promise<void> => {
 	bot.start((ctx) => {
-		databases.writeUser(ctx.update.message.from);
-
-		ctx.telegram.sendMessage(ctx.message.chat.id, `Welcome! Try send /photo command or write any text`);
+		ctx.telegram.sendMessage(ctx.message.chat.id, `Welcome! Try send /survey command or write any text`);
 	});
 };
 
@@ -66,7 +64,7 @@ const createSurvey = async (): Promise<void> => {
 				[Markup.button.callback("👍 Great", "survey_great")],
 				[Markup.button.callback("😐 Okay", "survey_okay")],
 				[Markup.button.callback("👎 Not good", "survey_not_good")],
-			])
+			]),
 		);
 	});
 
@@ -74,7 +72,14 @@ const createSurvey = async (): Promise<void> => {
 	bot.action(/^survey_/, (ctx) => {
 		const response = ctx.match[0].split("_")[1];
 		ctx.answerCbQuery(`Thanks for your feedback: ${response}`);
+		// output response to console
+		console.log(response);
 		// Here you can add code to store the survey response
+		databases.writeSurvey({
+			id: 1,
+			survey_id: ctx.update.callback_query.from.id.toString(),
+			survey_data: response,
+		});
 	});
 };
 

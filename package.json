@@ -56,7 +56,9 @@
 		"prepare": "ts-patch install -s"
 	},
 	"dependencies": {
+		"airtable": "^0.12.2",
 		"express": "^4.17.1",
+		"googleapis": "^144.0.0",
 		"localtunnel": "^2.0.2",
 		"lowdb": "^1.0.0",
 		"telegraf": "^4.4.2"
