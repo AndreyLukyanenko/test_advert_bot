@@ -15,6 +15,6 @@ export class AirtableAdapter {
 
 	async write(data: any) {
 		// Implement writing to Airtable
-		this.base(tableId).create(data);
+		this.base(this.tableId).create(data);
 	}
 }
