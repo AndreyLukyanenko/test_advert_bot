@@ -3,6 +3,7 @@ import Airtable from "airtable";
 
 export class AirtableAdapter {
 	private base: Airtable.Base;
+	private tableId: string;
 
 	constructor(apiKey: string, baseId: string, tableId: string) {
 		this.base = new Airtable({ apiKey }).base(baseId);
