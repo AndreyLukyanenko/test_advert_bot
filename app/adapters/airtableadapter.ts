@@ -6,6 +6,7 @@ export class AirtableAdapter {
 
 	constructor(apiKey: string, baseId: string, tableId: string) {
 		this.base = new Airtable({ apiKey }).base(baseId);
+		this.tableId = tableId;
 	}
 
 	async read() {
@@ -14,5 +15,6 @@ export class AirtableAdapter {
 
 	async write(data: any) {
 		// Implement writing to Airtable
+		this.base(tableId).create(data);
 	}
 }
