@@ -14,6 +14,7 @@ import * as hears from "@app/functions/hears";
 	await command.quit();
 	await command.start();
 	await command.sendPhoto();
+	await command.createSurvey();
 	await hears.text();
 	await command.launch();
 })();
