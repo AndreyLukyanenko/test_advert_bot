@@ -11,6 +11,7 @@ import bot from "@app/functions/telegraf";
 import * as databases from "@app/functions/databases";
 import config from "@configs/config";
 import { launchPolling, launchWebhook } from "./launcher";
+import { Markup } from "telegraf";
 
 /**
  * command: /quit
@@ -52,6 +53,32 @@ const start = async (): Promise<void> => {
 };
 
 /**
+ * command: /survey
+ * =====================
+ * Create a simple survey
+ *
+ */
+const createSurvey = async (): Promise<void> => {
+	bot.command("survey", (ctx) => {
+		ctx.reply(
+			"How do you like our bot?",
+			Markup.inlineKeyboard([
+				[Markup.button.callback("👍 Great", "survey_great")],
+				[Markup.button.callback("😐 Okay", "survey_okay")],
+				[Markup.button.callback("👎 Not good", "survey_not_good")],
+			])
+		);
+	});
+
+	// Handle survey responses
+	bot.action(/^survey_/, (ctx) => {
+		const response = ctx.match[0].split("_")[1];
+		ctx.answerCbQuery(`Thanks for your feedback: ${response}`);
+		// Here you can add code to store the survey response
+	});
+};
+
+/**
  * Run bot
  * =====================
  * Send welcome message
@@ -64,7 +91,8 @@ const launch = async (): Promise<void> => {
 	} else {
 		launchPolling();
 	}
+	await createSurvey();
 };
 
-export { launch, quit, sendPhoto, start };
+export { launch, quit, sendPhoto, start, createSurvey };
 export default launch;
