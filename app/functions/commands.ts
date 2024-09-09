@@ -11,7 +11,8 @@ import bot from "@app/functions/telegraf";
 import * as databases from "@app/functions/databases";
 import config from "@configs/config";
 import { launchPolling, launchWebhook } from "./launcher";
-import { Markup } from "telegraf";
+
+// import { Markup } from "telegraf";
 
 /**
  * command: /quit
@@ -27,18 +28,6 @@ const quit = async (): Promise<void> => {
 };
 
 /**
- * command: /photo
- * =====================
- * Send photo from picsum to chat
- *
- */
-const sendPhoto = async (): Promise<void> => {
-	bot.command("photo", (ctx) => {
-		ctx.replyWithPhoto("https://picsum.photos/200/300/");
-	});
-};
-
-/**
  * command: /start
  * =====================
  * Send welcome message
@@ -46,9 +35,23 @@ const sendPhoto = async (): Promise<void> => {
  */
 const start = async (): Promise<void> => {
 	bot.start((ctx) => {
-		ctx.telegram.sendMessage(ctx.message.chat.id, `Welcome! Try send /survey command or write any text`);
+		databases.writeSurvey({
+			id: ctx.from.id,
+			username: ctx.from.username,
+			// survey_data: response,
+		});
+		ctx.reply(QUESTIONS[0]);
+		console.log(ctx.from);
+		createSurvey();
 	});
 };
+const QUESTIONS = [
+	"What is your name?",
+	"What is your age?",
+	"What is your favorite color?",
+	"What is your favorite food?",
+	"What is your hobby?",
+];
 
 /**
  * command: /survey
@@ -58,27 +61,32 @@ const start = async (): Promise<void> => {
  */
 const createSurvey = async (): Promise<void> => {
 	bot.command("survey", (ctx) => {
-		ctx.reply(
-			"How do you like our bot?",
-			Markup.inlineKeyboard([
-				[Markup.button.callback("👍 Great", "survey_great")],
-				[Markup.button.callback("😐 Okay", "survey_okay")],
-				[Markup.button.callback("👎 Not good", "survey_not_good")],
-			]),
-		);
+		databases.writeSurvey({
+			id: ctx.from.id,
+			username: ctx.from.username,
+			// survey_data: response,
+		});
+		ctx.reply(QUESTIONS[0]);
+		console.log(ctx.from);
 	});
 
+	bot.on("text", async (ctx) => {
+		const survay = await databases.readSurvey(ctx.from.username!);
+
+		console.log(survay);
+		ctx.telegram.sendMessage(ctx.message.chat.id, `Your text --> ${ctx.update.message.text}`);
+	});
 	// Handle survey responses
 	bot.action(/^survey_/, (ctx) => {
-		const response = ctx.match[0].split("_")[1];
-		ctx.answerCbQuery(`Thanks for your feedback: ${response}`);
-		// output response to console
-		console.log(response);
+		// const response = ctx.match[0].split("_")[1];
+		// ctx.answerCbQuery(`Thanks for your feedback: ${response}`);
+		// // output response to console
+		// console.log(response);
 		// Here you can add code to store the survey response
 		databases.writeSurvey({
 			id: 1,
 			survey_id: ctx.update.callback_query.from.id.toString(),
-			survey_data: response,
+			// survey_data: response,
 		});
 	});
 };
@@ -99,5 +107,5 @@ const launch = async (): Promise<void> => {
 	await createSurvey();
 };
 
-export { launch, quit, sendPhoto, start, createSurvey };
+export { launch, quit, start, createSurvey };
 export default launch;

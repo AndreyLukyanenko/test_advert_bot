@@ -10,8 +10,14 @@ export class AirtableAdapter {
 		this.tableId = tableId;
 	}
 
-	async read() {
-		// Implement reading from Airtable
+	async read(username: string) {
+		try {
+			const record = await this.base(this.tableId).find(username);
+			return record;
+		} catch (error) {
+			console.error("Error reading from Airtable:", error);
+			throw error;
+		}
 	}
 
 	async write(data: any) {

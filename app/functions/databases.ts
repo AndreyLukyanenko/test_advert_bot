@@ -31,6 +31,8 @@ const databases = {
  *
  * @Context: ctx.update.message.from
  *
+ * @param data
+ * @param username
  * @interface [TelegramUserInterface](https://github.com/ptkdev-boilerplate/node-telegram-bot-boilerplate/blob/main/app/webcomponent/types/databases.type.ts)
  *
  * @param { TelegramUserInterface } json - telegram user object
@@ -41,6 +43,15 @@ const databases = {
 // 	await databases.surveys.write(json);
 // };
 
+const readSurvey = async (username: string): Promise<void> => {
+	try {
+		await databases.surveys.read(username);
+	} catch (error) {
+		console.error("Error reading from Airtable:", error);
+		throw error;
+	}
+};
+
 const writeSurvey = async (data: SurveyInterface): Promise<void> => {
 	try {
 		await databases.surveys.write(data);
@@ -50,5 +61,5 @@ const writeSurvey = async (data: SurveyInterface): Promise<void> => {
 	}
 };
 
-export { databases, writeSurvey };
+export { databases, writeSurvey, readSurvey };
 export default databases;
