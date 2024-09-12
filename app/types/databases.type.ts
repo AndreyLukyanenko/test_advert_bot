@@ -77,3 +77,7 @@ export interface TelegramUserInterface {
 	 */
 	language_code?: string;
 }
+
+export interface SurveyInterface {
+	[key: string]: any;
+}

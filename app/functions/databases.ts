@@ -7,15 +7,22 @@
  * @license: MIT License
  *
  */
-import type { TelegramUserInterface } from "@app/types/databases.type";
+import type { SurveyInterface } from "@app/types/databases.type";
 import configs from "@configs/config";
-import lowdb from "lowdb";
-import lowdbFileSync from "lowdb/adapters/FileSync";
+// import lowdb from "lowdb";
+// import lowdbFileSync from "lowdb/adapters/FileSync";
+// import { GoogleSheetsAdapter } from "@app/adapters/googlesheetsadapter";
+import { AirtableAdapter } from "@app/adapters/airtableadapter";
 
-const databases = { users: lowdb(new lowdbFileSync<{ users: TelegramUserInterface[] }>(configs.databases.users)) };
-
-databases.users = lowdb(new lowdbFileSync(configs.databases.users));
-databases.users.defaults({ users: [] }).write();
+const databases = {
+	// users: new GoogleSheetsAdapter(""),
+	// read from config
+	surveys: new AirtableAdapter(
+		configs.databases.surveys.apiKey,
+		configs.databases.surveys.baseId,
+		configs.databases.surveys.tableId,
+	),
+};
 
 /**
  * writeUser()
@@ -24,20 +31,56 @@ databases.users.defaults({ users: [] }).write();
  *
  * @Context: ctx.update.message.from
  *
+ * @param data
+ * @param username
  * @interface [TelegramUserInterface](https://github.com/ptkdev-boilerplate/node-telegram-bot-boilerplate/blob/main/app/webcomponent/types/databases.type.ts)
  *
  * @param { TelegramUserInterface } json - telegram user object
  *
  */
-const writeUser = async (json: TelegramUserInterface): Promise<void> => {
-	const user_id = databases.users.get("users").find({ id: json.id }).value();
+// const writeUser = async (json: TelegramUserInterface): Promise<void> => {
+// 	// Implement logic to update or append user data in Google Sheets
+// 	await databases.surveys.write(json);
+// };
 
-	if (user_id) {
-		databases.users.get("users").find({ id: user_id.id }).assign(json).write();
-	} else {
-		databases.users.get("users").push(json).write();
+const readSurvey = async (username: string): Promise<any> => {
+	try {
+		const survey = await databases.surveys.read(username);
+		return survey;
+	} catch (error) {
+		console.error("Error reading from Airtable:", error);
+		throw error;
 	}
 };
 
-export { databases, writeUser };
+const readAllSurveys = async (): Promise<any> => {
+	try {
+		const surveys = await databases.surveys.readAll();
+		console.log("Surveys", surveys);
+		return surveys;
+	} catch (error) {
+		console.error("Error reading from Airtable:", error);
+		throw error;
+	}
+};
+
+const writeSurvey = async (data: SurveyInterface): Promise<void> => {
+	try {
+		await databases.surveys.write(data);
+	} catch (error) {
+		console.error("Error writing to Airtable:", error);
+		throw error;
+	}
+};
+
+const updateSurvey = async (data: SurveyInterface): Promise<void> => {
+	try {
+		await databases.surveys.update(data);
+	} catch (error) {
+		console.error("Error updating Airtable:", error);
+		throw error;
+	}
+};
+
+export { databases, writeSurvey, readSurvey, readAllSurveys, updateSurvey };
 export default databases;

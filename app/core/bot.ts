@@ -1,5 +1,4 @@
 import * as command from "@app/functions/commands";
-import * as hears from "@app/functions/hears";
 
 /**
  * Start bot
@@ -13,7 +12,6 @@ import * as hears from "@app/functions/hears";
 (async () => {
 	await command.quit();
 	await command.start();
-	await command.sendPhoto();
-	await hears.text();
+	await command.createSurvey();
 	await command.launch();
 })();
