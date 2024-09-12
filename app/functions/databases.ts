@@ -43,9 +43,21 @@ const databases = {
 // 	await databases.surveys.write(json);
 // };
 
-const readSurvey = async (username: string): Promise<void> => {
+const readSurvey = async (username: string): Promise<any> => {
 	try {
-		await databases.surveys.read(username);
+		const survey = await databases.surveys.read(username);
+		return survey;
+	} catch (error) {
+		console.error("Error reading from Airtable:", error);
+		throw error;
+	}
+};
+
+const readAllSurveys = async (): Promise<any> => {
+	try {
+		const surveys = await databases.surveys.readAll();
+		console.log("Surveys", surveys);
+		return surveys;
 	} catch (error) {
 		console.error("Error reading from Airtable:", error);
 		throw error;
@@ -61,5 +73,14 @@ const writeSurvey = async (data: SurveyInterface): Promise<void> => {
 	}
 };
 
-export { databases, writeSurvey, readSurvey };
+const updateSurvey = async (data: SurveyInterface): Promise<void> => {
+	try {
+		await databases.surveys.update(data);
+	} catch (error) {
+		console.error("Error updating Airtable:", error);
+		throw error;
+	}
+};
+
+export { databases, writeSurvey, readSurvey, readAllSurveys, updateSurvey };
 export default databases;

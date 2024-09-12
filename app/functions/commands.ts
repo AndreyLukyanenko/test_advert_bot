@@ -12,14 +12,58 @@ import * as databases from "@app/functions/databases";
 import config from "@configs/config";
 import { launchPolling, launchWebhook } from "./launcher";
 
-// import { Markup } from "telegraf";
+const start = async (): Promise<void> => {
+	bot.start((ctx) => {
+		databases.writeSurvey({
+			id: ctx.from.id,
+			username: ctx.from.username,
+			firstName: ctx.from.first_name,
+			lastName: ctx.from.last_name ? ctx.from.last_name : "",
+		});
+		ctx.reply("Введіть ваше повне ім'я");
+		console.log(ctx.from);
+		createSurvey();
+	});
+};
 
-/**
- * command: /quit
- * =====================
- * If user exit from bot
- *
- */
+const createSurvey = async (): Promise<void> => {
+	bot.on("text", async (ctx) => {
+		const surveyAnswers = await databases.readAllSurveys();
+		console.log(surveyAnswers);
+		const currentUserSurvey = surveyAnswers.filter(
+			(survey: any) => survey.fields.username === ctx.from.username,
+		)[0];
+		if (!currentUserSurvey.fields.fullName) {
+			await databases.updateSurvey({
+				id: currentUserSurvey.id,
+				fields: {
+					...currentUserSurvey.fields,
+					fullName: ctx.message.text,
+				},
+			});
+			ctx.reply("Дякуємо! Тепер введіть ваш email");
+		} else if (!currentUserSurvey.fields.email) {
+			await databases.updateSurvey({
+				id: currentUserSurvey.id,
+				fields: {
+					...currentUserSurvey.fields,
+					email: ctx.message.text,
+				},
+			});
+			ctx.reply("Дякуємо! Тепер введіть ваш телефонний номер");
+		} else if (!currentUserSurvey.fields.phoneNumber) {
+			await databases.updateSurvey({
+				id: currentUserSurvey.id,
+				fields: {
+					...currentUserSurvey.fields,
+					phoneNumber: ctx.message.text,
+				},
+			});
+			ctx.reply("Дякуємо! Ми скоро з Вами зв'яжемося");
+		}
+	});
+};
+
 const quit = async (): Promise<void> => {
 	bot.command("quit", (ctx) => {
 		ctx.telegram.leaveChat(ctx.message.chat.id);
@@ -27,76 +71,6 @@ const quit = async (): Promise<void> => {
 	});
 };
 
-/**
- * command: /start
- * =====================
- * Send welcome message
- *
- */
-const start = async (): Promise<void> => {
-	bot.start((ctx) => {
-		databases.writeSurvey({
-			id: ctx.from.id,
-			username: ctx.from.username,
-			// survey_data: response,
-		});
-		ctx.reply(QUESTIONS[0]);
-		console.log(ctx.from);
-		createSurvey();
-	});
-};
-const QUESTIONS = [
-	"What is your name?",
-	"What is your age?",
-	"What is your favorite color?",
-	"What is your favorite food?",
-	"What is your hobby?",
-];
-
-/**
- * command: /survey
- * =====================
- * Create a simple survey
- *
- */
-const createSurvey = async (): Promise<void> => {
-	bot.command("survey", (ctx) => {
-		databases.writeSurvey({
-			id: ctx.from.id,
-			username: ctx.from.username,
-			// survey_data: response,
-		});
-		ctx.reply(QUESTIONS[0]);
-		console.log(ctx.from);
-	});
-
-	bot.on("text", async (ctx) => {
-		const survay = await databases.readSurvey(ctx.from.username!);
-
-		console.log(survay);
-		ctx.telegram.sendMessage(ctx.message.chat.id, `Your text --> ${ctx.update.message.text}`);
-	});
-	// Handle survey responses
-	bot.action(/^survey_/, (ctx) => {
-		// const response = ctx.match[0].split("_")[1];
-		// ctx.answerCbQuery(`Thanks for your feedback: ${response}`);
-		// // output response to console
-		// console.log(response);
-		// Here you can add code to store the survey response
-		databases.writeSurvey({
-			id: 1,
-			survey_id: ctx.update.callback_query.from.id.toString(),
-			// survey_data: response,
-		});
-	});
-};
-
-/**
- * Run bot
- * =====================
- * Send welcome message
- *
- */
 const launch = async (): Promise<void> => {
 	const mode = config.mode;
 	if (mode === "webhook") {
